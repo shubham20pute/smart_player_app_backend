@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sports Video Tracking</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .section {
+            margin: 20px auto;
+            padding: 20px;
+            width: 50%;
+            border: 2px solid #333;
+            border-radius: 10px;
+            box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
+        }
+        video {
+            width: 80%;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Sports Video Tracking</h2>
+
+    <!-- Ball Movement Tracking -->
+    <div class="section">
+        <h3>Upload Video for Ball Movement Tracking</h3>
+        <input type="file" id="ball-upload" accept="video/mp4">
+        <button onclick="uploadVideo('ball-upload', 'ball')">Upload & Process</button>
+        <video id="ball-video" controls></video>
+    </div>
+
+    <!-- Batsman Tracking -->
+    <div class="section">
+        <h3>Upload Video for Batsman Tracking</h3>
+        <input type="file" id="batsman-upload" accept="video/mp4">
+        <button onclick="uploadVideo('batsman-upload', 'batsman')">Upload & Process</button>
+        <video id="batsman-video" controls></video>
+    </div>
+
+    <!-- Bowler Tracking -->
+    <div class="section">
+        <h3>Upload Video for Bowler Tracking</h3>
+        <input type="file" id="bowler-upload" accept="video/mp4">
+        <button onclick="uploadVideo('bowler-upload', 'bowler')">Upload & Process</button>
+        <video id="bowler-video" controls></video>
+    </div>
+
+    <script>
+        function uploadVideo(inputId, trackingType) {
+            const fileInput = document.getElementById(inputId);
+            if (!fileInput.files.length) {
+                alert("Please select a video file.");
+                return;
+            }
+
+            let formData = new FormData();
+            formData.append("video", fileInput.files[0]);
+
+            fetch(`/upload-video?type=${trackingType}`, {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.processed_video_url) {
+                    document.getElementById(`${trackingType}-video`).src = data.processed_video_url;
+                } else {
+                    alert("Error processing video.");
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+    </script>
+
+</body>
+</html>
