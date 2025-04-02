@@ -17,6 +17,30 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 
+def convert_video(input_path, output_path):
+    """Convert video codec to 'mp4v' using OpenCV."""
+    cap = cv2.VideoCapture(input_path)
+
+    # Get video properties
+    fps = int(cap.get(cv2.CAP_PROP_FPS))
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+    # Define the codec and create VideoWriter object
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            break
+        out.write(frame)  # Write frame to new file
+
+    cap.release()
+    out.release()
+    return True
+
+
 @app.route("/player_motion", methods=["POST"])
 def player_motion():
     if 'video' not in request.files:
@@ -27,10 +51,17 @@ def player_motion():
     if file.filename == '':
         return jsonify({"error": "Empty filename"}), 400
     
-    file.save(UPLOAD_FOLDER+'/'+file.filename)
+    input_path = UPLOAD_FOLDER+'/'+file.filename
+    converted_file_name = 'processed_'+ file.filename
+    converted_path = UPLOAD_FOLDER+'/'+converted_file_name
 
+    file.save(input_path)
 
-    response = process_player(file.filename)
+    convert_video(input_path,converted_path)
+
+    os.remove(input_path)
+
+    response = process_player(converted_file_name)
     print(response)
 
     return jsonify({"processed_video_url": response}), 200
@@ -47,10 +78,17 @@ def ballTracking():
     if file.filename == '':
         return jsonify({"error": "Empty filename"}), 400
     
-    file.save(UPLOAD_FOLDER+'/'+file.filename)
+    input_path = UPLOAD_FOLDER+'/'+file.filename
+    converted_file_name = 'processed_'+ file.filename
+    converted_path = UPLOAD_FOLDER+'/'+converted_file_name
+    
+    file.save(input_path)
 
+    convert_video(input_path,converted_path)
 
-    response = get_ball_positions(file.filename)
+    os.remove(input_path)
+
+    response = get_ball_positions(converted_file_name)
     print(response)
 
     return jsonify({"processed_video_url": response}), 200

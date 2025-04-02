@@ -1,5 +1,11 @@
 import cv2, os, time
 import torch
+
+torch.set_num_threads(1)  # Reduce CPU threads
+
+if torch.cuda.is_available():
+    torch.cuda.device("cpu")
+    
 import numpy as np
 import mediapipe as mp
 import time
